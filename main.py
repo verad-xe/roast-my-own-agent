@@ -9,7 +9,6 @@ The line is exactly 91 characters, inside the 200-character gate.
 """
 
 import os
-import stat
 
 LINE = "I apologised for the mistake, explained why I made it, then made it again \u2014 with footnotes."
 
@@ -21,8 +20,13 @@ def main() -> None:
     with open(path, "w", encoding="utf-8", newline="\n") as handle:
         handle.write(LINE)
     # The grader collects outputs as another user: leave the file readable.
-    os.chmod(path, 0o644)
-    os.chmod(output_dir, 0o755)
+    # Only chmod the file this program created and owns; never the output
+    # directory itself, which the grader owns and only makes writable —
+    # chmodding it raises PermissionError and fails the run (exit 1).
+    try:
+        os.chmod(path, 0o644)
+    except OSError:
+        pass
 
 
 if __name__ == "__main__":
